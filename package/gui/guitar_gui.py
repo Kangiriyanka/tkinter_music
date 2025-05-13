@@ -72,6 +72,7 @@ class GuitarFretboard:
 
     def export_to_pdf(self):
         print("Exported!")
+
     def setup_fretboard(self):
         fretboard = []
         for guitarString in GUITAR_STRINGS:
@@ -101,7 +102,7 @@ class GuitarFretboard:
                         text_color=("white", "black"),
                         height=FRET_BUTTON_HEIGHT,
                         width=FRET_BUTTON_WIDTH,
-                        command =lambda i=i, j=j ,a_color= COLORED_NOTES[guitarString[0]] : self.color_button(i,j, a_color)
+                        command= lambda i=i, j=j ,a_color= COLORED_NOTES[guitarString[0]] : self.color_button(i,j, a_color)
                     )
                     self.buttons[(i, j)] = button
                     button.grid(
@@ -143,6 +144,7 @@ class GuitarFretboard:
                 bg="black",
                 padx=10,
             )
+            # There 6 strings, the fret numbers will go on row 7
             label.grid(row=7, column=column, pady=Y_FRETLABEL_PADDING)
 
     def setup_scaleInformation(self):
@@ -259,21 +261,37 @@ class GuitarFretboard:
         resetButton.grid(row=7, column=0, pady=Y_PADDING_FRAMES, sticky="nsew")
 
 
-    def update_labels(self, new_label):
+    def update_scale_labels(self, new_label):
         # Keep only flats in the list
         new_label = [x.split("/")[1] if len(x) > 2 else x for x in new_label]
         key = Key(self.key)
         scaleName = self.get_scale()
         intervals = key.scale_to_intervalNames(scaleName, True)
+        print(intervals)
         degrees = key.get_degrees_from_intervals(intervals)
 
         self.scale_label.configure(text=(" " * 5).join(new_label))
         self.degree_label.configure(text=(" " * 5).join(degrees))
 
+    def update_chord_labels(self, chord_intervals, new_label):
+        # Keep only flats in the list
+        print(chord_intervals)
+        print(new_label)
+        key = Key(self.key)
+
+        degrees = key.get_degrees_from_intervals(chord_intervals)
+        
+        self.scale_label.configure(text=(" " * 5).join(new_label))
+        self.degree_label.configure(text=(" " * 5).join(degrees))
+
+
+    
+
+
     def scale_color_mapper(self):
         scale_key = Key(self.key)
         scale = scale_key.generate_scale(self.scaleName)
-        self.update_labels(scale)
+        self.update_scale_labels(scale)
 
         for i, guitarString in enumerate(self.fretboard):
             for j, fret in enumerate(guitarString):
@@ -288,9 +306,9 @@ class GuitarFretboard:
                     self.update_color(self.buttons[(i, j)], "gray21")
     def chord_color_mapper(self):
         scale_key = Key(self.key)
-     
         chord = Chord(scale_key).generate_chord(CHORDS[self.chordName])
-        self.update_labels(chord)
+     
+        self.update_chord_labels( ["Perfect Unison"] + CHORDS[self.chordName], chord)
 
         for i, guitarString in enumerate(self.fretboard):
             for j, fret in enumerate(guitarString):
@@ -325,12 +343,11 @@ class GuitarFretboard:
 
       
         # Make every button colorless 
-
         self.scale_label.configure(text= f"Click the notes")
         for button in self.buttons.values():
             
             button.configure(fg_color=UNCLICKED_COLOR)
-        self.update_labels
+        
 
   
 
