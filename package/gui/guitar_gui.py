@@ -1,12 +1,14 @@
 import tkinter as tk
-from tkinter import Canvas, ttk
+from tkinter import  ttk
 from package.src.key import Key
 from package.src.chord import Chord
 from package.src.harmonica import Harmonica
 from package.src.constants import NOTES, GUITAR_STRINGS, COLORED_NOTES, SCALES, GUITAR_TO_PIANO, CHORDS
-from io import BytesIO
 import customtkinter
-import tempfile
+import mss, mss.tools
+import os
+import secrets
+
 
 X_PADDING_BUTTONS = 15
 Y_PADDING_BUTTONS = 15
@@ -30,8 +32,8 @@ class GuitarFretboard:
     def __init__(self, root):
         self.root = root
         self.key = "C"
-        self.scaleName = "Major"
-        self.chordName = "Major"
+        self.scale_name = "Major"
+        self.chord_name = "Major"
         self.root.title("Guitar Fretboard")
         root.overrideredirect(True)
         root.overrideredirect(False)
@@ -66,12 +68,119 @@ class GuitarFretboard:
         self.setup_scaleSelector()
         self.setup_scaleInformation()
 
+       
+        self.snap_scale_button = customtkinter.CTkButton(
+            self.root, text="Snap the scale", 
+            font= ("Roboto", 20, "bold"), 
+            hover_color=BUTTON_HOVER_COLOR,
+            fg_color=BUTTON_COLOR,
+            command=self.snapshot, width = 50, height = 25
+            )
+        self.snap_chord_button = customtkinter.CTkButton(
+            self.root, text="Snap the chord", 
+            hover_color=BUTTON_HOVER_COLOR,
+            fg_color=BUTTON_COLOR,
+            font= ("Roboto", 20, "bold"), 
+            command=lambda is_chord= True :self.snapshot(is_chord= True), 
+            width = 50, height = 25
+        )
 
-        self.export_button = ttk.Button(self.root, text="Export to PDF", command=self.export_to_pdf)
-        self.export_button.grid(row=1, column=1)
+        self.screenshot_button = customtkinter.CTkButton(
+            self.root, text="Simple screenshot", 
+            hover_color=BUTTON_HOVER_COLOR,
+            fg_color=BUTTON_COLOR,
+            font= ("Roboto", 20, "bold"), 
+            command=self.simple_snapshot, 
+            width = 50, height = 25
+        )
 
-    def export_to_pdf(self):
-        print("Exported!")
+
+        self.screenshot_button.grid(row=1, column=1 , sticky= "e", padx= 5 )
+        self.snap_scale_button.grid(row=1, column=2, sticky= "e",  padx = 5)
+        self.snap_chord_button.grid(row=1, column=3 , sticky= "e", padx= 5)
+        
+
+    def simple_snapshot(self):
+  
+
+        screenshot_directory = f"screenshots/"
+        os.makedirs(screenshot_directory, exist_ok=True)
+        filename = "screenshot_" + secrets.token_hex(4) + ".png"
+        print(filename)
+    
+       
+    
+
+        with mss.mss() as sct:
+          
+            # Use the 1st monitor
+            # From the API: Each monitor is a dict with left-top-width-height 
+            # left is the x coordinate of the upper-left corner and top is the y coordinate of the upper-left corner
+            monitor = sct.monitors[1]
+
+            left = monitor["left"] 
+            top = monitor["top"] 
+            width = monitor["width"]
+            height = monitor["height"]
+            bbox = (top,left,width,height)
+
+        
+            im = sct.grab(bbox)
+            mss.tools.to_png(im.rgb, im.size, output= os.path.join(screenshot_directory, filename))
+
+    def snapshot(self, is_chord = False):
+        """
+        Takes a screenshot of the current application window and saves it as a PNG file.
+
+        The screenshot is saved in a directory based on the key and whether the capture 
+        is for a scale or a chord.
+        Directories created (if they don't exist):
+            - scales/<key>/ for scale images
+            - chords/<key>/ for chord images
+
+        Filenames are automatically generated using the key and the scale/chord name.
+
+        Args:
+            is_chord (bool): If True, saves the image to the chords directory using 
+                            the chord name. If False, saves to scales directory 
+                            using the scale name.
+    """
+        key = self.key
+        if "/" in self.key:
+            key = self.key.replace("/", "|")
+        scale_directory = f"scales/{key}"
+        chord_directory = f"chords/{key}"
+        
+        os.makedirs(scale_directory, exist_ok=True)
+        os.makedirs(chord_directory, exist_ok=True)
+
+        filename = f"{key}_{"_".join(self.scale_name.split(" "))}.png"
+        output_path = os.path.join(scale_directory, filename)
+
+
+        if is_chord: 
+         filename = f"{key}_{"_".join(self.chord_name.split(" "))}.png"
+         output_path = os.path.join(chord_directory, filename)
+    
+
+        with mss.mss() as sct:
+           
+            # Use the 1st monitor
+            # From the API: Each monitor is a dict with left-top-width-height 
+            # left is the x coordinate of the upper-left corner and top is the y coordinate of the upper-left corner
+            monitor = sct.monitors[1]
+
+            left = monitor["left"] 
+            top = monitor["top"] 
+            width = monitor["width"]
+            height = monitor["height"]
+            bbox = (top,left,width,height)
+
+        
+            im = sct.grab(bbox)
+            mss.tools.to_png(im.rgb, im.size, output=output_path)
+
+
 
     def setup_fretboard(self):
         fretboard = []
@@ -265,9 +374,8 @@ class GuitarFretboard:
         # Keep only flats in the list
         new_label = [x.split("/")[1] if len(x) > 2 else x for x in new_label]
         key = Key(self.key)
-        scaleName = self.get_scale()
-        intervals = key.scale_to_intervalNames(scaleName, True)
-        print(intervals)
+        scale_name = self.get_scale()
+        intervals = key.scale_to_intervalNames(scale_name, True)
         degrees = key.get_degrees_from_intervals(intervals)
 
         self.scale_label.configure(text=(" " * 5).join(new_label))
@@ -290,7 +398,7 @@ class GuitarFretboard:
 
     def scale_color_mapper(self):
         scale_key = Key(self.key)
-        scale = scale_key.generate_scale(self.scaleName)
+        scale = scale_key.generate_scale(self.scale_name)
         self.update_scale_labels(scale)
 
         for i, guitarString in enumerate(self.fretboard):
@@ -303,12 +411,12 @@ class GuitarFretboard:
                     # Find its position in the scale
                     self.update_color(self.buttons[(i, j)], COLORED_NOTES[fret])
                 else:
-                    self.update_color(self.buttons[(i, j)], "gray21")
+                    self.update_color(self.buttons[(i, j)], UNCLICKED_COLOR)
     def chord_color_mapper(self):
         scale_key = Key(self.key)
-        chord = Chord(scale_key).generate_chord(CHORDS[self.chordName])
+        chord = Chord(scale_key).generate_chord(CHORDS[self.chord_name])
      
-        self.update_chord_labels( ["Perfect Unison"] + CHORDS[self.chordName], chord)
+        self.update_chord_labels( ["Perfect Unison"] + CHORDS[self.chord_name], chord)
 
         for i, guitarString in enumerate(self.fretboard):
             for j, fret in enumerate(guitarString):
@@ -320,7 +428,7 @@ class GuitarFretboard:
                     # Find its position in the scale
                     self.update_color(self.buttons[(i, j)], COLORED_NOTES[fret])
                 else:
-                    self.update_color(self.buttons[(i, j)], "gray21")
+                    self.update_color(self.buttons[(i, j)], UNCLICKED_COLOR)
 
 
     def color_button(self,x,y,a_color):
@@ -378,12 +486,14 @@ class GuitarFretboard:
         self.key = a_key
 
     def get_scale(self):
-        return self.scaleName
+        return self.scale_name
 
-    def change_scale(self, a_scaleName):
-        self.scaleName = a_scaleName
-    def change_chord(self,a_chordName):
-        self.chordName = a_chordName
+    def change_scale(self, a_scale_name):
+ 
+        self.scale_name = a_scale_name
+      
+    def change_chord(self,a_chord_name):
+        self.chord_name = a_chord_name
         
 
     def update_color(self, a_button, a_color):
