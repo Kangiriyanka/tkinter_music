@@ -33,7 +33,10 @@ class GuitarFretboard:
         self.scaleName = "Major"
         self.chordName = "Major"
         self.root.title("Guitar Fretboard")
-        self.root.geometry("1600x1500")
+        root.overrideredirect(True)
+        root.overrideredirect(False)
+        root.attributes('-fullscreen',True)
+
         
         self.buttons = {}
         self.fretboardRootFrame = tk.Frame(
@@ -383,10 +386,8 @@ class GuitarFretboard:
 # Initialize the main window
 
 root = tk.Tk()
+GuitarFretboard(root)
 
-root.overrideredirect(True)
-root.overrideredirect(False)
-root.attributes('-fullscreen',True)
 
 
 root.mainloop()

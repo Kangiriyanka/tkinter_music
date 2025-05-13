@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from package.src.key import Key
 from package.src.constants import NOTES, INTERVALS,SCALES
+import customtkinter as ctk
 
 
 #------------------------------------------Initialization-----------------------------------------------#
@@ -12,16 +13,16 @@ scales=  [x for x in SCALES.keys()]
 key = Key("C")
 window = tk.Tk()
 window.title("Music Notes Trainer")
-window.geometry("1200x500")
+window.geometry("1200x700")
+window.overrideredirect(True)
+window.overrideredirect(False)
+window.attributes('-fullscreen',True)
 GOLDENROD= "goldenrod4"
 GOLDENROD2= "goldenrod2"
 
 #------------------------------------------Functions-----------------------------------------------#
 
-def reset_key(event):
-    global key
-    print("Reset to C")
-    key = Key("C")
+
 def update_key_tab1(event):
     
     global key
@@ -91,15 +92,15 @@ def generateScale():
 
 #-----------------------Notebook and Styles-----------------------#
 
-notebook = ttk.Notebook(window, width= 1100, height= 400, padding= '0.2i')
-tab1= ttk.Frame(notebook, height= 500)
+notebook = ttk.Notebook(window, width= 1500, height= 600)
+tab1= ttk.Frame(notebook)
 tab2= ttk.Frame(notebook)
 tab3= ttk.Frame(notebook)
 
 notebook.add(tab1, text= "Notes names trainer")
 notebook.add(tab2, text= "Interval names trainer")
 notebook.add(tab3, text= "Scales Trainer")
-notebook.grid(row=0, column=0, sticky="")
+notebook.grid(row=0, column=0)
 style = ttk.Style()
 style.configure("TRadiobutton",
                 font=("Arial", 20),
@@ -107,33 +108,37 @@ style.configure("TRadiobutton",
                 
 
                )
-style.configure("TButton",
-                
+# style.configure("TButton",
+#                 font=("Arial", 30), padx= 10
                
-                )
+#                 )
 
 #-----------------------Tab 1-----------------------#
 
 tab1_title_label = ttk.Label(tab1, text="Note to Note Trainer", font="Arial 40 bold")
-tab1_title_label.grid(row=0, column=0, columnspan=2, pady=20, sticky= "w")
+tab1_title_label.grid(row=0, column=0, columnspan=1, pady=20, sticky= "w")
 
 tab1_container = ttk.Frame(tab1)
 tab1_container.grid(row=1, column=0, sticky="w")
 
-# Tab1 container for the first note
+
+
+# Tab 1 container for the first note
 tab1_note = tk.StringVar(value=notes[0])
+tab1_note_label= ttk.Label(tab1_container,text= "First Note:" , font= "Arial 25")
 tab1_note_combo = ttk.Combobox(tab1_container, textvariable= tab1_note, font="Arial 25", width= 10 )
 tab1_note_combo.bind("<<ComboboxSelected>>", update_key_tab1)
 tab1_note_combo.bind("<KeyRelease>", update_key_tab1)
 tab1_note_combo['values'] = notes
 
-tab1_note_label= ttk.Label(tab1_container,text= "First Note:" , font= "Arial 25")
-tab1_note_label.grid(row=1, column=0,)
-tab1_note_combo.grid(row=1, column=1)
+# Setup tab 1's first container
+tab1_note_label.grid(row=0, column=0,)
+tab1_note_combo.grid(row=0, column=1)
 
 #Tab 1 container for the second note
 tab1_second_container = ttk.Frame(tab1)
 tab1_second_container.grid(row=2, column=0, sticky="w", pady= 5)
+
 tab1_second_note = tk.StringVar(value=notes[0])
 tab2_second_combo= ttk.Combobox(tab1_second_container, textvariable= tab1_second_note, font="Arial 24", width= 10 )
 tab2_second_combo['values'] = notes
@@ -144,29 +149,28 @@ tab2_second_combo.grid(row=0, column=1)
 
 # Buttons and Labels
 
-tab1_button_container = ttk.Frame(tab1)
-tab1_interval_container = ttk.Frame(tab1)
+tab1_button_container = ttk.Frame(tab1, padding= 20)
+tab1_result_container = ttk.Frame(tab1)
 
-halfStepsButton = ttk.Button(tab1_button_container, text= "Half-Steps", command= lambda: change_halfSteps(), )
-intervalButton = ttk.Button(tab1_button_container, text= "Interval Between", command= lambda: change_intervalNames(), )
+halfStepsButton = ctk.CTkButton(tab1_button_container, text= "Half-Steps", command= lambda: change_halfSteps(), height= 100, width= 150,  font=("Roboto", 20, "bold"),)
+intervalButton = ctk.CTkButton(tab1_button_container, text= "Interval ", command= lambda: change_intervalNames(), height= 100, width= 150,  font=("Roboto", 20, "bold"),  )
 
 ttk.Separator(tab1, orient="vertical").grid(column=1, row=1, padx= 30, rowspan=4, sticky='ns')
-tab1_button_container.grid(row=4, column = 0, sticky="w")
-tab1_interval_container.grid(row=4, column=1, sticky= "w")
-intervalButton.grid(row= 0, column =1, sticky="ew",)
+tab1_button_container.grid(row=3, column = 0, rowspan= 2, sticky= "nsew" )
+tab1_result_container.grid(row=1,  column=2, sticky= "w")
+intervalButton.grid(row= 0, column =1,  sticky="ew", padx= 10)
 halfStepsButton.grid(row= 0, column =0, sticky="ew")
 
 
 
 halfStepsResult = ""
 intervalResult= ""
-ttk.Label(tab1,text="Half-Steps & Interval Name", font= "Arial 20 bold ",anchor="center").grid(row=1,column=4, columnspan=2, pady= 10, sticky="n")
-halfSteps_label = ttk.Label(tab1,text= f" {halfStepsResult} ",font= "Arial 30", relief= tk.GROOVE, borderwidth=2, width= 10, background= GOLDENROD,  anchor="center" )
-intervalName_label = ttk.Label(tab1, text= f" {intervalResult}", font="Arial 30", relief= tk.GROOVE,borderwidth=2, width= 20, background=GOLDENROD, anchor="center")
+ttk.Label(tab1_result_container,text="Half-Steps & Interval Name", font= "Arial 25  ").grid(row=0,column=0 , pady= 20, sticky="n")
+halfSteps_label = ttk.Label(tab1_result_container,text= f" {halfStepsResult} ",font= "Arial 30", relief= tk.GROOVE, borderwidth=2, width= 10, background= GOLDENROD,  anchor="center" )
+intervalName_label = ttk.Label(tab1_result_container, text= f" {intervalResult}", font="Arial 30", relief= tk.GROOVE,borderwidth=2, width= 20, background=GOLDENROD, anchor="center")
 
-halfSteps_label.grid(row=2, column=4 ,  ipady= 10,  )
-intervalName_label.grid(row=2,column=5, ipady= 10  )
-
+halfSteps_label.grid(row=1, column=0 ,  ipady= 10,  sticky= "ew" )
+intervalName_label.grid(row=1,column=1, ipady= 10 , sticky= "ew" )
 
 #-----------------------Tab 2-----------------------#
 
@@ -206,7 +210,7 @@ tab2_third_container= ttk.Frame(tab2)
 tab2_third_container.grid(row=3, column=0, sticky="w", pady= 1)
 
 descending_var = tk.BooleanVar(value=False)
-radio_label = ttk.Label(tab2_third_container, text="Sorting Order:", font="Arial 24")
+radio_label = ttk.Label(tab2_third_container, text="Direction:", font="Arial 24")
 radio_label.grid(row= 0, column=0 ,pady=5)
 
 radio_true = ttk.Radiobutton(tab2_third_container, text="Descending", variable=descending_var, value=True,)
@@ -217,11 +221,11 @@ radio_false.grid(row=0, column = 2, padx=10)
 
 
 noteResult = ""
-notesButton = ttk.Button(tab2, text= "Get note",   command= lambda: change_halfSteps_from_intervals())
+notesButton = ctk.CTkButton(tab2, text= "Generate",   command= lambda: change_halfSteps_from_intervals(), height= 100, width= 150,  font=("Roboto", 20, "bold"))
 
 ttk.Label(tab2,text="Note", font= "Arial 20 bold ",anchor="center").grid(row=1,column=5,  sticky="n")
 note_label = ttk.Label(tab2, text=f"{noteResult}", font= "Arial 60", anchor="center",relief=tk.GROOVE, background= GOLDENROD, width= 7 )
-notesButton.grid(row=5, column= 0,)
+notesButton.grid(row=5, column= 0, pady= 10)
 note_label.grid(row=2, column= 5)
 
 
@@ -264,8 +268,9 @@ radio_flats.grid(row=0, column = 1, padx= 10, sticky="w")
 radio_sharps.grid(row=0, column = 2,padx= 10, sticky="w")
 
 
-generateScaleButton = ttk.Button(tab3_container, text= "Generate" ,command= lambda: generateScale(), )
-generateScaleButton.grid(row=0, column= 4, columnspan=3, sticky="w")
+generateScaleButton = ctk.CTkButton(tab3_container, text= "Generate" ,command= lambda: generateScale(), height= 100, width=150, font= ("Roboto", 20) )
+
+generateScaleButton.grid(row=0, column= 4, columnspan=3, sticky="w", padx= 20)
 
 tab3_second_container = ttk.Frame(tab3)
 ttk.Separator(tab3, orient="horizontal").grid(column=0, columnspan=2 ,row=2,  sticky='we')
