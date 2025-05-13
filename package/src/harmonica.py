@@ -2,6 +2,7 @@ BLOW_NOTES = ["Perfect Unison", "Major 3rd", "Perfect 5th"] * 3 + ["Perfect Unis
 DRAW_NOTES = ["Major 2nd", "Perfect 5th", "Major 7th", "Major 2nd", "Perfect 4th", 
               "Major 6th", "Major 7th", "Major 2nd", "Perfect 4th", "Major 6th"]
 
+
 class Harmonica:
     def __init__(self, key):
         """
@@ -186,6 +187,12 @@ class Harmonica:
     
         except KeyError:
             raise KeyError(f"Hole {hole} does not have an overdraw.")
+        
+    
+    def generate_scale(self,scale, position):
+        print(self.key.generate_scale(scale))
+        print(self.layout)
+        return self.key.generate_scale(scale)
        
 
        
