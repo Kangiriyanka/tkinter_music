@@ -8,9 +8,8 @@ def main():
   key = Key(key)
   chords = Chord(key)
   harmonica = Harmonica(key)
+  print(harmonica.generate_layout())
  
-  harmonica.generate_1st_position_scale("Major Pentatonic")
-
 
 
   

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from package.src.key import Key
-from package.src.harmonica import Harmonica, FIRST_POSITION_SCALES, SECOND_POSITION_SCALES, COLORED_HARMONICA_NOTES
+from package.src.harmonica import *
 from package.src.constants import NOTES, HARMONICA_DEGREES
 import customtkinter
 
@@ -35,11 +35,11 @@ class HarmonicaSimulator:
          # Create frame for scales & positions 
         self.scale_frame = tk.Frame(self.root,)
         self.scale_frame.grid(row=2, column=0,  padx= 1,sticky="ew", columnspan= 2,pady= 20)
-        self.radio_flats = ttk.Radiobutton(self.scale_frame, text="Flats", variable=self.accidentals_var, value=False,)
-        self.radio_sharps = ttk.Radiobutton(self.scale_frame, text="Sharps", variable=self.accidentals_var, value=True)
+        self.radio_flats = ttk.Radiobutton(self.scale_frame, text="Flats", variable=self.accidentals_var, value=False, command = self.scale_color_mapper)
+        self.radio_sharps = ttk.Radiobutton(self.scale_frame, text="Sharps", variable=self.accidentals_var, value=True, command = self.scale_color_mapper)
         self.radio_flats.grid(row=1, column = 3, padx= 10, sticky="w")
         self.radio_sharps.grid(row=1, column = 4,padx= 10, sticky="w")
-        self.scale_frame.bind("<KeyRelease>", self.scale_color_mapper)
+   
 
         self.note_frame = tk.Frame(self.root)
         self.note_frame.grid(row=4, column=0 , padx= 10)
@@ -70,8 +70,22 @@ class HarmonicaSimulator:
 
        self.scale = new_scale
     def change_position(self, new_position):
+        self.position = new_position
 
-       self.position = new_position
+        match self.position:
+            case "1":
+                self.scale_combo_box.configure(values=list(FIRST_POSITION_SCALES.keys()))
+                self.scale_combo_box.set(list(FIRST_POSITION_SCALES.keys())[0])
+                self.scale = list(FIRST_POSITION_SCALES.keys())[0]
+            case "2":
+                self.scale_combo_box.configure(values=list(SECOND_POSITION_SCALES.keys()))
+                self.scale_combo_box.set(list(SECOND_POSITION_SCALES.keys())[0])
+                self.scale = list(SECOND_POSITION_SCALES.keys())[0]
+            
+            case "3":
+                self.scale_combo_box.configure(values=list(THIRD_POSITION_SCALES.keys()))
+                self.scale_combo_box.set(list(THIRD_POSITION_SCALES.keys())[0])
+                self.scale = list(THIRD_POSITION_SCALES.keys())[0]
 
     def scale_color_mapper(self):
         # Reset the colors to prevent notes/colors from other scales to overlap
@@ -80,9 +94,9 @@ class HarmonicaSimulator:
             case "1":
 
                scale = self.harmonica.generate_1st_position_scale(self.scale)
-               
                if self.accidentals_var.get():
                     scale= [note.split("/")[0] if "/" in note else note for note in scale]
+               
                else: 
                     scale= [note.split("/")[1] if "/" in note else note for note in scale]
 
@@ -97,9 +111,11 @@ class HarmonicaSimulator:
 
             case "2":
                scale = self.harmonica.generate_2nd_position_scale(self.scale)
-               print(scale)
+              
+          
                if self.accidentals_var.get():
                     scale= [note.split("/")[0] if "/" in note else note for note in scale]
+                   
                else: 
                     scale= [note.split("/")[1] if "/" in note else note for note in scale]
 
@@ -270,14 +286,17 @@ class HarmonicaSimulator:
 
         self.recording_button = self.create_ctkbutton(self.harmonica_frame,100,50,("Arial",20, "bold"), "green",self.toggle_recording, "Record")
         self.recording_button.grid(row=7 , column=0,)
+
+  
+
         
     def setup_scale_frame(self):
         self.options_label = tk.Label(self.scale_frame, text="Options", font=("Arial italic", 20))
         self.options_label.grid(row= 0, column=0, sticky= "w",padx= 10, pady= 10)
         self.position_combo_box = self.create_CTkComboBox(self.scale_frame, some_values= ["1","2","3"], a_command= self.change_position)
         self.position_combo_box.grid(row=1 , column=0,padx=10)
-        self.position_combo_box = self.create_CTkComboBox(self.scale_frame, some_values= list(FIRST_POSITION_SCALES.keys()), a_command= self.change_scale)
-        self.position_combo_box.grid(row=1 , column=1,)
+        self.scale_combo_box = self.create_CTkComboBox(self.scale_frame, some_values= list(FIRST_POSITION_SCALES.keys()), a_command= self.change_scale)
+        self.scale_combo_box.grid(row=1 , column=1,)
         self.generate_scale_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "#B35900",self.scale_color_mapper, "Generate")
         self.generate_scale_button.grid(row=2 , column=0,  padx= 10, pady = 20 ,sticky= "ew",  )
         self.generate_reset_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "#B35900",self.reset_colors, "Reset")

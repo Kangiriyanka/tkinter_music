@@ -9,8 +9,19 @@ FIRST_POSITION_SCALES = {
 }
 
 SECOND_POSITION_SCALES = {
-    "Major": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "blow"), (4, "draw"), (5, "blow"), (5, "overblow"), (6, "blow")],
-    "Major Pentatonic": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "draw"), (5, "blow"), (6,"blow")]
+    "Major": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "blow"), (4, "draw"), (5, "blow"), (5, "overblow",1), (6, "blow")],
+    "Major Pentatonic": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "draw"), (5, "blow"), (6,"blow")],
+    "Minor Pentatonic": [(2, "draw"), (3, "bend",1), (4, "blow"),(4,"draw"), (5,"draw"), (6,"blow")],
+    "Minor Pentatonic": [(2, "draw"), (3, "bend",1), (4, "blow"),(4,"draw"), (5,"draw"), (6,"blow")],
+    "Minor Blues": [(2, "draw"), (3, "bend",1), (4, "blow"), (4, "bend",1),(4,"draw"), (5,"draw"), (6,"blow")],
+    "Myxolidian": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4,"blow"),(4,"draw"),(5,"blow"),(5,"draw"),(6,"blow")]
+}
+
+THIRD_POSITION_SCALES= {
+    "Major Pentatonic": [(1,"draw"), (2, "blow"), (2,"bend",1), (3,"bend",2),(3,"draw"),(4,"draw")],
+    "Minor Blues": [(1,"draw"), (2,"bend",2), (2,"draw"),(3,"bend",3),(3,"bend",2),(4,"blow"),(4,"draw")],
+    "Dorian":  [(1,"draw"),(2,"blow"),(2,"bend",2),(2,"draw"),(3,"bend",2),(3,"draw"),(4,"blow")]
+    
 }
 
 COLORED_HARMONICA_NOTES = {
@@ -55,7 +66,7 @@ class Harmonica:
                 print(f"  Overblow: {', '.join(notes['overblow'])}")
             if 'overdraw' in notes:
                 print(f"  Overdraw {', '.join(notes['overdraw'])}")
-            print("")  # Print a new line for better readabilityxw
+            print("")  # Print a new line for better readability
 
     def generate_layout(self):
         """
@@ -89,7 +100,7 @@ class Harmonica:
 
         harmonica[1]["overblow"] = [harmonica[8]["blowbend"][0]]
         harmonica[4]["overblow"] = [harmonica[8]["blowbend"][0]]
-        harmonica[5]["overblow"] = harmonica[9]["blowbend"][0]
+        harmonica[5]["overblow"] = [harmonica[9]["blowbend"][0]]
         harmonica[6]["overblow"] = [self.key.flatten((harmonica[10]["blowbend"][0]),1)]
 
         # Adding overdraws
@@ -221,12 +232,10 @@ class Harmonica:
         for entry in FIRST_POSITION_SCALES[scale]:
             
             if len(entry) == 3:
-                a = self.layout[entry[0]][entry[1]][entry[2]-1]
-                print(a)
+               
                 result.append(self.layout[entry[0]][entry[1]][entry[2]-1])
             else:
-                a = self.layout[entry[0]][entry[1]]
-                print(a)
+               
                 result.append(self.layout[entry[0]][entry[1]])
         return result
 
@@ -236,13 +245,27 @@ class Harmonica:
         for entry in SECOND_POSITION_SCALES[scale]:
             
             if len(entry) == 3:
-                a = self.layout[entry[0]][entry[1]][entry[2]-1]
-                print(a)
+           
                 result.append(self.layout[entry[0]][entry[1]][entry[2]-1])
               
             else:
-                a = self.layout[entry[0]][entry[1]]
-                print(a)
+            
+           
+                result.append(self.layout[entry[0]][entry[1]])
+       
+        return result
+
+    def generate_3rd_position_scale(self,scale):
+        result = []
+        for entry in THIRD_POSITION_SCALES[scale]:
+            
+            if len(entry) == 3:
+           
+                result.append(self.layout[entry[0]][entry[1]][entry[2]-1])
+              
+            else:
+            
+           
                 result.append(self.layout[entry[0]][entry[1]])
        
         return result
