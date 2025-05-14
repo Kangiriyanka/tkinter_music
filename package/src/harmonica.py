@@ -89,7 +89,7 @@ class Harmonica:
 
         harmonica[1]["overblow"] = [harmonica[8]["blowbend"][0]]
         harmonica[4]["overblow"] = [harmonica[8]["blowbend"][0]]
-        harmonica[5]["overblow"] = [harmonica[9]["blowbend"][0]]
+        harmonica[5]["overblow"] = harmonica[9]["blowbend"][0]
         harmonica[6]["overblow"] = [self.key.flatten((harmonica[10]["blowbend"][0]),1)]
 
         # Adding overdraws
@@ -217,24 +217,35 @@ class Harmonica:
     
     def generate_1st_position_scale(self,scale):
         
-      
-         for entry in FIRST_POSITION_SCALES[scale]:
+        result = []
+        for entry in FIRST_POSITION_SCALES[scale]:
             
             if len(entry) == 3:
-                print(self.layout[entry[0]][entry[1]][entry[2]-1])
+                a = self.layout[entry[0]][entry[1]][entry[2]-1]
+                print(a)
+                result.append(self.layout[entry[0]][entry[1]][entry[2]-1])
             else:
-                 print(self.layout[entry[0]][entry[1]])
-
+                a = self.layout[entry[0]][entry[1]]
+                print(a)
+                result.append(self.layout[entry[0]][entry[1]])
+        return result
 
 
     def generate_2nd_position_scale(self,scale):
-
+        result = []
         for entry in SECOND_POSITION_SCALES[scale]:
             
             if len(entry) == 3:
-                print(self.layout[entry[0]][entry[1]][entry[2]-1])
+                a = self.layout[entry[0]][entry[1]][entry[2]-1]
+                print(a)
+                result.append(self.layout[entry[0]][entry[1]][entry[2]-1])
+              
             else:
-                 print(self.layout[entry[0]][entry[1]])
+                a = self.layout[entry[0]][entry[1]]
+                print(a)
+                result.append(self.layout[entry[0]][entry[1]])
+       
+        return result
 
        
 

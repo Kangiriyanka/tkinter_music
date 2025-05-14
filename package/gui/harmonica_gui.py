@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from package.src.key import Key
 from package.src.harmonica import Harmonica, FIRST_POSITION_SCALES, SECOND_POSITION_SCALES, COLORED_HARMONICA_NOTES
 from package.src.constants import NOTES, HARMONICA_DEGREES
@@ -22,17 +23,26 @@ class HarmonicaSimulator:
         self.root.state("zoomed")
         self.lick= []
         self.isRecording = False
+        self.accidentals_var = tk.BooleanVar(value=False)
         
         
         
         # Create frame for harmonica buttons
-        self.harmonica_frame = tk.Frame(self.root)
+        self.harmonica_frame = tk.Frame(self.root, highlightbackground="goldenrod4", highlightthickness=0.5)
         
-        self.harmonica_frame.grid(pady=30, row=0, column=1, sticky="nsew")
+        self.harmonica_frame.grid(pady=10,padx= 10, row=0, column=0, sticky="nsew", ipadx= 20, ipady= 20)
 
          # Create frame for scales & positions 
-        self.scale_frame = tk.Frame(self.root)
-        self.scale_frame.grid(pady=30, row=0, column=0, sticky="nsew", padx = 10)
+        self.scale_frame = tk.Frame(self.root,)
+        self.scale_frame.grid(row=2, column=0,  padx= 1,sticky="ew", columnspan= 2,pady= 20)
+        self.radio_flats = ttk.Radiobutton(self.scale_frame, text="Flats", variable=self.accidentals_var, value=False,)
+        self.radio_sharps = ttk.Radiobutton(self.scale_frame, text="Sharps", variable=self.accidentals_var, value=True)
+        self.radio_flats.grid(row=1, column = 3, padx= 10, sticky="w")
+        self.radio_sharps.grid(row=1, column = 4,padx= 10, sticky="w")
+        self.scale_frame.bind("<KeyRelease>", self.scale_color_mapper)
+
+        self.note_frame = tk.Frame(self.root)
+        self.note_frame.grid(row=4, column=0 , padx= 10)
         
         self.setup_buttons()
         self.setup_labels()
@@ -64,28 +74,61 @@ class HarmonicaSimulator:
        self.position = new_position
 
     def scale_color_mapper(self):
+        # Reset the colors to prevent notes/colors from other scales to overlap
         self.reset_colors()
-       
         match self.position:
             case "1":
-                for entry in FIRST_POSITION_SCALES[self.scale]:
+
+               scale = self.harmonica.generate_1st_position_scale(self.scale)
+               
+               if self.accidentals_var.get():
+                    scale= [note.split("/")[0] if "/" in note else note for note in scale]
+               else: 
+                    scale= [note.split("/")[1] if "/" in note else note for note in scale]
+
+               self.scale_label.configure(text=(" " * 5).join(scale))
+               for entry in FIRST_POSITION_SCALES[self.scale]:
                     if entry in self.buttons:
                         self.buttons[entry].configure(fg_color="black")
+               return scale
                  
-                self.scale_result_label = self.harmonica.generate_1st_position_scale(self.scale)
+                
+               
 
             case "2":
-                for entry in SECOND_POSITION_SCALES[self.scale]:
+               scale = self.harmonica.generate_2nd_position_scale(self.scale)
+               print(scale)
+               if self.accidentals_var.get():
+                    scale= [note.split("/")[0] if "/" in note else note for note in scale]
+               else: 
+                    scale= [note.split("/")[1] if "/" in note else note for note in scale]
+
+               self.scale_label.configure(text=(" " * 5).join(scale))
+               for entry in SECOND_POSITION_SCALES[self.scale]:
                     if entry in self.buttons:
                         self.buttons[entry].configure(fg_color="black")
-                   
-                self.scale_result_label = self.harmonica.generate_2nd_position_scale(self.scale)
+               return scale
             
+            case "3":
+               scale = self.harmonica.generate_3rd_position_scale(self.scale)
+               if self.accidentals_var.get():
+                    scale= [note.split("/")[0] if "/" in note else note for note in scale]
+               else: 
+                    scale= [note.split("/")[1] if "/" in note else note for note in scale]
+
+               self.scale_label.configure(text=(" " * 5).join(scale))
+               for entry in THIRD_POSITION_SCALES[self.scale]:
+                    if entry in self.buttons:
+                        self.buttons[entry].configure(fg_color="black")
+               return scale
             case _: 
                 return "There's another position?"
     
     def reset_colors(self):
-        
+       
+        self.result_note_label.configure(text="")
+        self.result_descriptive_label.configure(text="")
+        self.scale_label.configure(text="Select a position & scale")
         for key, button in self.buttons.items():
             if len(key) == 2:
                 button.configure(fg_color=COLORED_HARMONICA_NOTES[key[1]])
@@ -201,22 +244,23 @@ class HarmonicaSimulator:
 
     def setup_labels(self):
         # Add labels to display result
-        self.result_descriptive_label = tk.Label(self.root, text="Select a hole", font=("Arial italic", 20))
+        self.result_descriptive_label = tk.Label(self.note_frame, text="", font=("Arial italic", 20))
         self.key_label = tk.Label(self.harmonica_frame, text= "Key", font= ("Roboto 20"))
-        self.result_note_label = tk.Label(self.root, text="", font=("Arial", 40))
-        self.result_descriptive_label.grid(row=2, column=1, pady=20)
-        self.result_note_label.grid(row=3, column= 1)
+        self.result_note_label = tk.Label(self.note_frame, text="", font=("Arial", 40))
+        self.result_descriptive_label.grid(row=0, column=0, columnspan= 2 )
+        self.result_note_label.grid(row=1, column= 0, columnspan= 2)
         self.key_label.grid(row=3, column= 0)
         self.current_lick_label= tk.Label(self.root, text= self.lick)
         self.key_label.grid(row=3,column=0)
-        self.scale_label = tk.Label(self.scale_frame, text= "Select a position & scale", font=("Arial italic", 20))
-        self.scale_label.grid(row=0, column=0, columnspan= 2, pady= 10)
+        self.scale_label = tk.Label(self.root, text= "Select a position & scale", font=("Arial italic", 20), padx= 10, pady= 10, highlightbackground="goldenrod4", highlightthickness=0.5)
+        self.scale_label.grid(row=3, column=0, columnspan= 2, padx= 10, pady= 10, sticky= "ew")
         self.scale_result_label = customtkinter.CTkLabel(
             self.root,
-            text=f"",
+            text="",
             text_color="#ff8000",
+
         )
-        self.scale_result_label.grid(row=4, column=1, columnspan= 2, pady= 10)
+        self.scale_result_label.grid(row=4, column=1, columnspan= 2, pady= 20)
         
         
 
@@ -228,14 +272,16 @@ class HarmonicaSimulator:
         self.recording_button.grid(row=7 , column=0,)
         
     def setup_scale_frame(self):
+        self.options_label = tk.Label(self.scale_frame, text="Options", font=("Arial italic", 20))
+        self.options_label.grid(row= 0, column=0, sticky= "w",padx= 10, pady= 10)
         self.position_combo_box = self.create_CTkComboBox(self.scale_frame, some_values= ["1","2","3"], a_command= self.change_position)
-        self.position_combo_box.grid(row=1 , column=0,)
+        self.position_combo_box.grid(row=1 , column=0,padx=10)
         self.position_combo_box = self.create_CTkComboBox(self.scale_frame, some_values= list(FIRST_POSITION_SCALES.keys()), a_command= self.change_scale)
         self.position_combo_box.grid(row=1 , column=1,)
-        self.generate_scale_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "gray",self.scale_color_mapper, "Generate")
-        self.generate_scale_button.grid(row=2 , column=0, columnspan= 2, pady = 10 )
-        self.generate_reset_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "gray",self.reset_colors, "Reset")
-        self.generate_reset_button.grid(row=2 , column=1, columnspan= 2, pady = 10 )
+        self.generate_scale_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "#B35900",self.scale_color_mapper, "Generate")
+        self.generate_scale_button.grid(row=2 , column=0,  padx= 10, pady = 20 ,sticky= "ew",  )
+        self.generate_reset_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "#B35900",self.reset_colors, "Reset")
+        self.generate_reset_button.grid(row=2 , column=1,  pady = 20, sticky ="ew" )
 
 
 
@@ -331,7 +377,7 @@ class HarmonicaSimulator:
                 a_fgColor=COLORED_HARMONICA_NOTES["overdraw"],
                 a_font=("Roboto", 18)
             )
-            self.buttons[(i, "overblow",)] = overdraw_button
+            self.buttons[(i, "overdraw",)] = overdraw_button
             overdraw_button.grid(row=7, column=i, pady=(20, 5))
 
     def play_blow(self, hole):
