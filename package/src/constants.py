@@ -137,7 +137,3 @@ HARMONICA_DEGREES= {
     3: "'''"
 }
 
-HARMONICA_SCALES = {
-
-    [4,-4,5,6,-6,7]
-}

@@ -103,11 +103,10 @@ class GuitarFretboard:
     def simple_snapshot(self):
   
 
-        screenshot_directory = f"screenshots/"
+        screenshot_directory = f"./screenshots/"
         os.makedirs(screenshot_directory, exist_ok=True)
         filename = "screenshot_" + secrets.token_hex(4) + ".png"
-        print(filename)
-    
+      
        
     
 
@@ -148,8 +147,9 @@ class GuitarFretboard:
         key = self.key
         if "/" in self.key:
             key = self.key.replace("/", "|")
-        scale_directory = f"scales/{key}"
-        chord_directory = f"chords/{key}"
+        scale_directory = f"./scales/{key}"
+    
+        chord_directory = f"./chords/{key}"
         
         os.makedirs(scale_directory, exist_ok=True)
         os.makedirs(chord_directory, exist_ok=True)
@@ -383,8 +383,7 @@ class GuitarFretboard:
 
     def update_chord_labels(self, chord_intervals, new_label):
         # Keep only flats in the list
-        print(chord_intervals)
-        print(new_label)
+      
         key = Key(self.key)
 
         degrees = key.get_degrees_from_intervals(chord_intervals)
@@ -507,6 +506,7 @@ class GuitarFretboard:
 
         for button in self.buttons.values():
             note = scale_key.match_note(button.cget("text"))
+            
             button.configure(fg_color=COLORED_NOTES[note])
 
 

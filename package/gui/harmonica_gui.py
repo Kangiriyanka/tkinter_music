@@ -1,6 +1,6 @@
 import tkinter as tk
 from package.src.key import Key
-from package.src.harmonica import Harmonica 
+from package.src.harmonica import Harmonica, FIRST_POSITION_SCALES, SECOND_POSITION_SCALES, COLORED_HARMONICA_NOTES
 from package.src.constants import NOTES, HARMONICA_DEGREES
 import customtkinter
 
@@ -10,11 +10,15 @@ class HarmonicaSimulator:
     def __init__(self, root):
         # Initialize the harmonica in the key of C
         self.key = Key("C")
+        self.scale = "Major"
+        self.position = "1"
         self.harmonica = Harmonica(self.key)
+        self.scale_result = ""
         
         # Main window setup
         self.root = root
         self.root.title("Harmonica Simulator")
+        self.buttons = {}
         self.root.state("zoomed")
         self.lick= []
         self.isRecording = False
@@ -23,25 +27,75 @@ class HarmonicaSimulator:
         
         # Create frame for harmonica buttons
         self.harmonica_frame = tk.Frame(self.root)
+        
         self.harmonica_frame.grid(pady=30, row=0, column=1, sticky="nsew")
+
+         # Create frame for scales & positions 
+        self.scale_frame = tk.Frame(self.root)
+        self.scale_frame.grid(pady=30, row=0, column=0, sticky="nsew", padx = 10)
         
         self.setup_buttons()
         self.setup_labels()
+        self.setup_scale_frame()
         # The area where the user can change the key
-        self.key_box = customtkinter.CTkComboBox(master=self.harmonica_frame,
+        self.key_box = customtkinter.CTkComboBox(self.harmonica_frame,
                  values=NOTES,
                  font= ("Roboto", 30),
                  command=  self.change_key)
         
         self.key_box.grid(row=5,column=0,padx=30 )
+
+        
+   
         
        
         
     def change_key(self, new_key):
 
-       print("Key updated to " + new_key)
+    
        new_key = Key(new_key)
        self.harmonica = Harmonica(new_key)
+
+    def change_scale(self, new_scale):
+
+       self.scale = new_scale
+    def change_position(self, new_position):
+
+       self.position = new_position
+
+    def scale_color_mapper(self):
+        self.reset_colors()
+       
+        match self.position:
+            case "1":
+                for entry in FIRST_POSITION_SCALES[self.scale]:
+                    if entry in self.buttons:
+                        self.buttons[entry].configure(fg_color="black")
+                 
+                self.scale_result_label = self.harmonica.generate_1st_position_scale(self.scale)
+
+            case "2":
+                for entry in SECOND_POSITION_SCALES[self.scale]:
+                    if entry in self.buttons:
+                        self.buttons[entry].configure(fg_color="black")
+                   
+                self.scale_result_label = self.harmonica.generate_2nd_position_scale(self.scale)
+            
+            case _: 
+                return "There's another position?"
+    
+    def reset_colors(self):
+        
+        for key, button in self.buttons.items():
+            if len(key) == 2:
+                button.configure(fg_color=COLORED_HARMONICA_NOTES[key[1]])
+            else:
+            
+                button.configure(fg_color=COLORED_HARMONICA_NOTES[f"{key[1]}_{key[2]}"])
+            
+           
+            
+
     
     def record_licks(self,note):
         self.lick.append(note)
@@ -92,9 +146,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_blow(i), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="Royal Blue",
+                a_fgColor=COLORED_HARMONICA_NOTES["blow"],
                 a_font=("Roboto", 20)
             )
+            self.buttons[(i,"blow")] = blow_button
             blow_button.grid(row=3, column=i, pady=5, padx=5)
         
         # Add draw buttons for 10 holes
@@ -105,10 +160,13 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_draw(abs(-i)), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="goldenrod4",
+                a_fgColor=COLORED_HARMONICA_NOTES["draw"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i,"draw")] = draw_button
+           
             draw_button.grid(row=5, column=i)
+        
         
         # Add bend buttons for holes that support bending
         self.setup_bend_buttons()
@@ -132,25 +190,53 @@ class HarmonicaSimulator:
             command=a_command,
            
         )
+    
+    def create_CTkComboBox(self, a_frame, some_values, a_command):
+        return customtkinter.CTkComboBox(
+            a_frame,
+            values = some_values,
+            command=a_command,
+           
+        )
 
     def setup_labels(self):
         # Add labels to display result
         self.result_descriptive_label = tk.Label(self.root, text="Select a hole", font=("Arial italic", 20))
         self.key_label = tk.Label(self.harmonica_frame, text= "Key", font= ("Roboto 20"))
-        self.result_note_label = tk.Label(self.root, text="", font=("Arial", 60))
+        self.result_note_label = tk.Label(self.root, text="", font=("Arial", 40))
         self.result_descriptive_label.grid(row=2, column=1, pady=20)
         self.result_note_label.grid(row=3, column= 1)
         self.key_label.grid(row=3, column= 0)
         self.current_lick_label= tk.Label(self.root, text= self.lick)
         self.key_label.grid(row=3,column=0)
+        self.scale_label = tk.Label(self.scale_frame, text= "Select a position & scale", font=("Arial italic", 20))
+        self.scale_label.grid(row=0, column=0, columnspan= 2, pady= 10)
+        self.scale_result_label = customtkinter.CTkLabel(
+            self.root,
+            text=f"",
+            text_color="#ff8000",
+        )
+        self.scale_result_label.grid(row=4, column=1, columnspan= 2, pady= 10)
+        
+        
 
     
 
     def setup_record_button(self):
 
-        self.recording_button = self.create_ctkbutton(self.root,100,50,("Arial",20, "bold"), "green",self.toggle_recording, "Record")
-        self.recording_button.grid(row=4 , column=2,)
+        self.recording_button = self.create_ctkbutton(self.harmonica_frame,100,50,("Arial",20, "bold"), "green",self.toggle_recording, "Record")
+        self.recording_button.grid(row=7 , column=0,)
         
+    def setup_scale_frame(self):
+        self.position_combo_box = self.create_CTkComboBox(self.scale_frame, some_values= ["1","2","3"], a_command= self.change_position)
+        self.position_combo_box.grid(row=1 , column=0,)
+        self.position_combo_box = self.create_CTkComboBox(self.scale_frame, some_values= list(FIRST_POSITION_SCALES.keys()), a_command= self.change_scale)
+        self.position_combo_box.grid(row=1 , column=1,)
+        self.generate_scale_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "gray",self.scale_color_mapper, "Generate")
+        self.generate_scale_button.grid(row=2 , column=0, columnspan= 2, pady = 10 )
+        self.generate_reset_button = self.create_ctkbutton(self.scale_frame,100,50,("Arial",20, "bold"), "gray",self.reset_colors, "Reset")
+        self.generate_reset_button.grid(row=2 , column=1, columnspan= 2, pady = 10 )
+
 
 
 
@@ -162,9 +248,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_bend(i, 1), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="green",
+                a_fgColor=COLORED_HARMONICA_NOTES["bend_1"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i, "bend", 1)] = bend_button
             bend_button.grid(row=7, column=i, pady=(20, 5))
 
         for i in [2, 3]:
@@ -174,9 +261,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_bend(i, 2), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="medium sea green",
+                a_fgColor=COLORED_HARMONICA_NOTES["bend_2"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i, "bend", 2)] = bend_button
             bend_button.grid(row=8, column=i)
 
         for i in [3]:
@@ -186,9 +274,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_bend(i, 3), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="sea green",
+                a_fgColor=COLORED_HARMONICA_NOTES["bend_3"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i, "bend", 3)] = bend_button
             bend_button.grid(row=9, column=i, pady=5)
 
     def setup_blowbend_buttons(self):
@@ -199,9 +288,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_blowbend(i, 1), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="DodgerBlue2",
+                a_fgColor=COLORED_HARMONICA_NOTES["blowbend_1"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i, "blowbend", 1)] = blowbend_button
             blowbend_button.grid(row=2, column=i, pady=(0, 20))
 
         for i in [10]:
@@ -211,9 +301,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_blowbend(i, 2), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="DodgerBlue4",
+                a_fgColor=COLORED_HARMONICA_NOTES["blowbend_2"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i, "blowbend", 2)] = blowbend_button
             blowbend_button.grid(row=1, column=i, pady=5)
 
     def setup_overblow_overdraw_buttons(self):
@@ -224,9 +315,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_overblow(i), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="DarkOrange2",
+                a_fgColor=COLORED_HARMONICA_NOTES["overblow"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i, "overblow",)] = overblow_button
             overblow_button.grid(row=2, column=i, pady=(5, 20))
 
         for i in [7, 9, 10]:
@@ -236,9 +328,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_overdraw(i), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor="firebrick3",
+                a_fgColor=COLORED_HARMONICA_NOTES["overdraw"],
                 a_font=("Roboto", 18)
             )
+            self.buttons[(i, "overblow",)] = overdraw_button
             overdraw_button.grid(row=7, column=i, pady=(20, 5))
 
     def play_blow(self, hole):

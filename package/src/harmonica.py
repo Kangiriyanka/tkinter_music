@@ -2,6 +2,32 @@ BLOW_NOTES = ["Perfect Unison", "Major 3rd", "Perfect 5th"] * 3 + ["Perfect Unis
 DRAW_NOTES = ["Major 2nd", "Perfect 5th", "Major 7th", "Major 2nd", "Perfect 4th", 
               "Major 6th", "Major 7th", "Major 2nd", "Perfect 4th", "Major 6th"]
 
+FIRST_POSITION_SCALES = {
+    "Major": [(4,"blow"), (4, "draw"), (5, "blow"), (5,"draw"), (6, "blow"), (6, "draw"), (7, "draw"), (7, "blow")],
+    "Major Pentatonic": [(4,"blow"), (4, "draw"), (5, "blow"), (6, "blow"), (6, "draw"), (7,  "blow")]
+    
+}
+
+SECOND_POSITION_SCALES = {
+    "Major": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "blow"), (4, "draw"), (5, "blow"), (5, "overblow"), (6, "blow")],
+    "Major Pentatonic": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "draw"), (5, "blow"), (6,"blow")]
+}
+
+COLORED_HARMONICA_NOTES = {
+  "blow": "Royal Blue",
+  "draw": "goldenrod4",
+  "bend_1": "green",
+  "bend_2": "medium sea green",
+  "bend_3": "sea green",
+  "blowbend_1": "DodgerBlue2",
+  "blowbend_2": "DodgerBlue4",
+  "overblow": "DarkOrange2",
+  "overdraw": "firebrick3",
+
+}
+
+
+
 
 class Harmonica:
     def __init__(self, key):
@@ -189,11 +215,26 @@ class Harmonica:
             raise KeyError(f"Hole {hole} does not have an overdraw.")
         
     
-    def generate_scale(self,scale, position):
-        print(self.key.generate_scale(scale))
-        print(self.layout)
-        return self.key.generate_scale(scale)
-       
+    def generate_1st_position_scale(self,scale):
+        
+      
+         for entry in FIRST_POSITION_SCALES[scale]:
+            
+            if len(entry) == 3:
+                print(self.layout[entry[0]][entry[1]][entry[2]-1])
+            else:
+                 print(self.layout[entry[0]][entry[1]])
+
+
+
+    def generate_2nd_position_scale(self,scale):
+
+        for entry in SECOND_POSITION_SCALES[scale]:
+            
+            if len(entry) == 3:
+                print(self.layout[entry[0]][entry[1]][entry[2]-1])
+            else:
+                 print(self.layout[entry[0]][entry[1]])
 
        
 
