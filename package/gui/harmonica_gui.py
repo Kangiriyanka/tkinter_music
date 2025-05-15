@@ -380,10 +380,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_overblow(i), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor=COLORED_HARMONICA_NOTES["overblow"],
+                a_fgColor=COLORED_HARMONICA_NOTES["overblow_1"],
                 a_font=("Roboto", 18)
             )
-            self.buttons[(i, "overblow",)] = overblow_button
+            self.buttons[(i, "overblow", 1)] = overblow_button
             overblow_button.grid(row=2, column=i, pady=(5, 20))
 
         for i in [7, 9, 10]:
@@ -393,10 +393,10 @@ class HarmonicaSimulator:
                 a_command=lambda i=i: self.play_overdraw(i), 
                 a_width=50, 
                 a_height=50,
-                a_fgColor=COLORED_HARMONICA_NOTES["overdraw"],
+                a_fgColor=COLORED_HARMONICA_NOTES["overdraw_1"],
                 a_font=("Roboto", 18)
             )
-            self.buttons[(i, "overdraw",)] = overdraw_button
+            self.buttons[(i, "overdraw", 1)] = overdraw_button
             overdraw_button.grid(row=7, column=i, pady=(20, 5))
 
     def play_blow(self, hole):

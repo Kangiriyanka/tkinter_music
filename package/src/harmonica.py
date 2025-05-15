@@ -9,7 +9,7 @@ FIRST_POSITION_SCALES = {
 }
 
 SECOND_POSITION_SCALES = {
-    "Major": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "blow"), (4, "draw"), (5, "blow"), (5, "overblow",1), (6, "blow")],
+    "Major": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "blow"), (4, "draw"), (5, "blow"), (5, "overblow", 1), (6, "blow")],
     "Major Pentatonic": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "draw"), (5, "blow"), (6,"blow")],
     "Minor Pentatonic": [(2, "draw"), (3, "bend",1), (4, "blow"),(4,"draw"), (5,"draw"), (6,"blow")],
     "Minor Pentatonic": [(2, "draw"), (3, "bend",1), (4, "blow"),(4,"draw"), (5,"draw"), (6,"blow")],
@@ -32,8 +32,8 @@ COLORED_HARMONICA_NOTES = {
   "bend_3": "sea green",
   "blowbend_1": "DodgerBlue2",
   "blowbend_2": "DodgerBlue4",
-  "overblow": "DarkOrange2",
-  "overdraw": "firebrick3",
+  "overblow_1": "DarkOrange2",
+  "overdraw_1": "firebrick3",
 
 }
 
