@@ -20,7 +20,6 @@ class HarmonicaSimulator:
         self.root = root
         self.root.title("Harmonica Simulator")
         self.buttons = {}
-        self.root.state("zoomed")
         self.lick= []
         self.isRecording = False
         self.accidentals_var = tk.BooleanVar(value=False)

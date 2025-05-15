@@ -35,11 +35,6 @@ class GuitarFretboard:
         self.scale_name = "Major"
         self.chord_name = "Major"
         self.root.title("Guitar Fretboard")
-        root.overrideredirect(True)
-        root.overrideredirect(False)
-        root.attributes('-fullscreen',True)
-
-        
         self.buttons = {}
         self.fretboardRootFrame = tk.Frame(
             root, relief=tk.SUNKEN, highlightbackground="black", highlightthickness=3
@@ -514,7 +509,4 @@ class GuitarFretboard:
 
 root = tk.Tk()
 GuitarFretboard(root)
-
-
-
 root.mainloop()

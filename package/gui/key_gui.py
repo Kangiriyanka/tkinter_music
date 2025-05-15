@@ -14,9 +14,6 @@ key = Key("C")
 window = tk.Tk()
 window.title("Music Notes Trainer")
 window.geometry("1200x700")
-window.overrideredirect(True)
-window.overrideredirect(False)
-window.attributes('-fullscreen',True)
 GOLDENROD= "goldenrod4"
 GOLDENROD2= "goldenrod2"
 
