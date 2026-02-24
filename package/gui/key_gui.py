@@ -3,7 +3,7 @@ import random
 import enum
 from tkinter import ttk
 from package.src.key import Key
-from package.src.constants import NOTES, INTERVALS,SCALES
+from package.src.constants import NOTES, INTERVALS,SCALES, COLORED_NOTES
 import customtkinter as ctk
 
 
@@ -131,12 +131,14 @@ def generate_random_scale():
 
 
 
+
 #-----------------------Tab 4 Quiz Logic-----------------------#
 
 def set_distance_mode():
     global quiz_mode
     quiz_mode = QuizMode.DISTANCE
     question_label.configure(text="Distance Quiz")
+    reset_highlights()
     ascending_answer_label.configure(text="")
     descending_answer_label.configure(text="")
 
@@ -146,6 +148,7 @@ def set_interval_mode():
     question_label.configure(text="Interval Quiz")
     ascending_answer_label.configure(text="")
     descending_answer_label.configure(text="")
+    reset_highlights()
 
 def set_scale_mode():
     global quiz_mode
@@ -153,8 +156,10 @@ def set_scale_mode():
     question_label.configure(text="Scale Quiz")
     ascending_answer_label.configure(text="")
     descending_answer_label.configure(text="")
+    reset_highlights()
 
 def generate_quiz():
+    reset_highlights()
     global quiz_a, quiz_b
     quiz_a, quiz_b = generate_random_notes()
     ascending_answer_label.configure(text="")
@@ -202,6 +207,7 @@ def distance_quiz_answer():
     ascending_answer_label.configure(text=f"Ascending: {interval}: {half_steps} half steps or {whole_half} ")
     descending_answer_label.configure(text=f"Descending: {descending_interval}: {descending_half_steps} half steps, {descending_whole_half} ")
 
+    highlight_distance_piano_notes(note_a = quiz_a, note_b = quiz_b)
 
 
 def interval_quiz_answer():
@@ -213,18 +219,22 @@ def interval_quiz_answer():
     ascending_answer_label.configure(text=f"Ascending: {ascending_answer}  ")
     descending_answer_label.configure(text=f"Descending: {descending_answer} ")
 
+    highlight_interval_piano_notes(ascending_answer, descending_answer )
+
 def scale_quiz_answer():
 
     current_key = Key(quiz_a)
-    scale_formula = "   ".join(current_key.generate_scale(current_scale_name))
+
+    scale_formula = current_key.generate_scale(current_scale_name)
+    scale_answer = "   ".join(current_key.generate_scale(current_scale_name))
     scale_intervals= current_key.scale_to_intervalNames(current_scale_name, root_relative=True)
     scale_degrees= "   ".join(key.get_degrees_from_intervals(scale_intervals))
 
-    ascending_answer_label.configure(text=f"{scale_formula}  ")
+    ascending_answer_label.configure(text=f"{scale_answer}  ")
     descending_answer_label.configure(text=f" {scale_degrees} ")
- 
 
-  
+    highlight_scale_piano_notes(notes = scale_formula)
+ 
 
     
 
@@ -237,8 +247,169 @@ def show_quiz_answer():
          scale_quiz_answer()
          
 
-   
 
+#-----------------------Piano Logic-----------------------#
+
+def build_piano(container, num_octaves=2):
+    
+    all_notes = []
+    for octave in range(num_octaves):
+        for note in NOTES:
+            all_notes.append(f"{note}{octave + 4}")
+    
+    piano_frame = ctk.CTkFrame(container, fg_color="#2b2b2b")
+    piano_frame.pack(padx=20, pady=20)
+    
+    white_width = 50
+    white_height = 140
+    black_width = 25
+    black_height = 90
+    gap = 2
+    
+    white_keys = []
+    white_count = 0
+    key_buttons = {} 
+
+    for note in all_notes:
+        if "#" not in note:
+            btn = ctk.CTkButton(piano_frame, text="", height=white_height, width=white_width,
+                                fg_color="white", hover_color="gray81", corner_radius=0,
+                                border_width=1, border_color="#888")
+            x_pos = white_count * (white_width + gap)
+            btn.place(x=x_pos, y=0)
+            white_keys.append((note, x_pos))
+            key_buttons[note] = btn  
+            white_count += 1
+
+    for note in all_notes:
+        note_name = note[:-1]
+        note_octave = int(note[-1])
+        if "#" in note_name:
+            base_note = note_name[0]
+            white_in_octave = ["C", "D", "E", "F", "G", "A", "B"].index(base_note)
+            white_key_index = (note_octave - 4) * 7 + white_in_octave
+            white_x = white_keys[white_key_index][1]
+            black_x = white_x + white_width - (black_width // 2)
+            btn = ctk.CTkButton(piano_frame, text="", height=black_height, width=black_width,
+                                fg_color="#1a1a1a", hover_color="#0a0a0a", corner_radius=0,
+                                border_width=1, border_color="#000")
+            btn.place(x=black_x, y=0)
+            btn.lift()
+            key_buttons[note] = btn  # <-- store it
+
+    total_width = white_count * (white_width + gap) + 20
+    piano_frame.configure(width=total_width, height=white_height + 20)
+
+    return key_buttons 
+
+def reset_highlights():
+     for note_name, btn in piano_keys.items():
+        if "#" in note_name:
+            btn.configure(fg_color="#1a1a1a")
+        else:
+            btn.configure(fg_color="white")
+
+
+def highlight_interval_piano_notes(ascending, descending):
+
+    reset_highlights()
+
+    for note_name, btn in piano_keys.items():
+        # strip octave (C4 -> C)
+        base = note_name.split()[0]
+
+        # remove accidental duplicate part (C#/Db4 -> C#/Db)
+        base = base[:-1]
+
+        if base==ascending:
+            btn.configure(
+            fg_color="#3CB371",
+            hover_color="#2E8B57"
+        )
+        elif base==descending:
+            btn.configure(
+            fg_color="#B4A415",
+            hover_color="#9B902B"
+        )
+            
+        elif base  == quiz_a:
+            btn.configure(
+                fg_color="#1E27D1",
+                hover_color="#2229AE",
+            )
+
+        else:
+            # subtle tint depending on original color
+            if "#" in note_name:
+                btn.configure(hover_color="#222222")
+            else:
+                btn.configure(hover_color="#f2f2f2")
+
+def highlight_distance_piano_notes(note_a, note_b):
+
+    reset_highlights()
+
+    for note_name, btn in piano_keys.items():
+        # strip octave (C4 -> C)
+        base = note_name.split()[0]
+
+        # remove accidental duplicate part (C#/Db4 -> C#/Db)
+        base = base[:-1]
+
+        if base==note_a:
+            btn.configure(
+            fg_color="#3CB371",
+            hover_color="#2E8B57"
+        )
+        elif base==note_b:
+            btn.configure(
+            fg_color="#B4A415",
+            hover_color="#9B902B"
+        )
+   
+        else:
+            # subtle tint depending on original color
+            if "#" in note_name:
+                btn.configure(hover_color="#222222")
+            else:
+                btn.configure(hover_color="#f2f2f2")
+
+
+
+def highlight_scale_piano_notes(notes):
+
+    reset_highlights()
+
+    for note_name, btn in piano_keys.items():
+        # strip octave (C4 -> C)
+        base = note_name.split()[0]
+
+        # remove accidental duplicate part (C#/Db4 -> C#/Db)
+        base = base[:-1]
+
+        if base == quiz_a:
+            btn.configure(
+            fg_color="#1E90FF",     # nice calm blue
+            hover_color="#1874CD"
+        )
+
+        elif base in notes:
+            btn.configure(
+            fg_color="#3CB371",
+            hover_color="#2E8B57"
+        )
+
+      
+
+        else:
+            # subtle tint depending on original color
+            if "#" in note_name:
+                btn.configure(hover_color="#222222")
+            else:
+                btn.configure(hover_color="#f2f2f2")
+
+       
+             
 #-----------------------Notebook and Styles-----------------------#
 
 notebook = ttk.Notebook(window, width= 1500, height= 600)
@@ -440,7 +611,7 @@ full_scale_interval_label.grid(row=3, column=0, sticky="w", pady=20)
 
 #-----------------------Tab 4-----------------------#
 
-#-----------------------Tab 4-----------------------#
+
 
 quiz_x_note = tk.StringVar(value="")
 quiz_y_note = tk.StringVar(value="")
@@ -513,6 +684,36 @@ answer_button.grid(row=1, column=1, rowspan=2, pady=5)
 
 
 
+#-----------------------Tab 4 Piano Toggle-----------------------#
+
+show_piano = tk.BooleanVar(value=False)  # Piano hidden by default
+
+# Add toggle function
+def toggle_piano():
+    if show_piano.get():
+        tab4_piano_container.grid(row=4, column=0, pady=10, sticky="nesw")
+    else:
+        tab4_piano_container.grid_remove()  # Hides but keeps in memory
+
+# Add toggle button in tab4_button_container (after the mode buttons)
+piano_toggle_button = ctk.CTkCheckBox(
+    tab4_button_container,
+    text="Show Piano",
+    variable=show_piano,
+    command=toggle_piano,
+    font=("Roboto", 16)
+)
+piano_toggle_button.grid(row=0, column=3, padx=20)
+
+#-----------------------Tab 4 Piano-----------------------#
+
+
+tab4_piano_container = ctk.CTkFrame(tab4, width=200)
+tab4_piano_container.grid(row=4, column=0, pady=10, sticky="nesw")
+
+
+piano_keys = build_piano(tab4_piano_container, 3)
+tab4_piano_container.grid_remove() 
 
 
 
