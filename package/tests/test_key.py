@@ -1,6 +1,6 @@
 import unittest
-from key import Key  
-from constants import SCALES, NOTES, INTERVALS 
+from package.src.key import Key  
+from package.src.constants import SCALES, NOTES, INTERVALS 
 
 # Add test infront of each test function
 

@@ -1,12 +1,9 @@
 import unittest
-from harmonica import Harmonica
-
-
+from package.src.harmonica import Harmonica
 
 class TestHarmonica(unittest.TestCase):
 
     def setUp(self):
-        """Set up a Chord instance for testing."""
         self.harmonica = Harmonica("D")
 
 

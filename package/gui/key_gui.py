@@ -1,20 +1,34 @@
 import tkinter as tk
+import random
+import enum
 from tkinter import ttk
 from package.src.key import Key
 from package.src.constants import NOTES, INTERVALS,SCALES
 import customtkinter as ctk
 
 
+#------------------------------------------Helper Classes-----------------------------------------------#
+
+class QuizMode(enum.Enum):
+    DISTANCE = "distance"
+    INTERVAL = "interval"
+    SCALE = "scale"
 #------------------------------------------Initialization-----------------------------------------------#
 
 notes = NOTES
 intervals = [x for x in INTERVALS.values()]
 scales=  [x for x in SCALES.keys()]
+quiz_a = None
+quiz_b = None
+current_interval = None
+current_scale_name = None
+current_scale_intervals = None
+quiz_mode = QuizMode.DISTANCE
 key = Key("C")
 window = tk.Tk()
 window.title("Music Notes Trainer")
 window.geometry("1200x700")
-GOLDENROD= "goldenrod4"
+GREEN= "medium sea green"
 GOLDENROD2= "goldenrod2"
 
 #------------------------------------------Functions-----------------------------------------------#
@@ -68,10 +82,12 @@ def change_halfSteps_from_intervals():
 def generateScale():
 
     global key
+    # You only need StringVar if you're using a dropdown or something.
     scale = key.generate_scale(scale_string.get())
     scale_intervals= (key.scale_to_intervalNames(scale_string.get(), True))
     
     scale_degrees= key.get_degrees_from_intervals(scale_intervals)
+    
 
     if accidentals_var.get():
       
@@ -87,16 +103,154 @@ def generateScale():
     full_scale_degrees_label.configure(text= f"Degrees: {full_scale_degrees}")
     full_scale_interval_label.configure(text=f"Intervals: {full_scale_intervals}")
 
+
+def generate_random_notes():
+    # No need to check unisons
+    while True:
+        first_note = random.choice(NOTES)
+        second_note = random.choice(NOTES)
+
+        if first_note != second_note:
+            return first_note, second_note
+        
+def generate_random_interval():
+    
+    while True:
+        random_interval = random.choice(INTERVALS)
+
+
+        if random_interval not in ["Perfect Unison", "Octave"] :
+            return random_interval
+
+def generate_random_scale():
+
+    name = random.choice(list(SCALES.keys()))
+    intervals = SCALES[name]
+    return name, intervals
+
+
+
+
+#-----------------------Tab 4 Quiz Logic-----------------------#
+
+def set_distance_mode():
+    global quiz_mode
+    quiz_mode = QuizMode.DISTANCE
+    question_label.configure(text="Distance Quiz")
+    ascending_answer_label.configure(text="")
+    descending_answer_label.configure(text="")
+
+def set_interval_mode():
+    global quiz_mode
+    quiz_mode = QuizMode.INTERVAL
+    question_label.configure(text="Interval Quiz")
+    ascending_answer_label.configure(text="")
+    descending_answer_label.configure(text="")
+
+def set_scale_mode():
+    global quiz_mode
+    quiz_mode = QuizMode.SCALE
+    question_label.configure(text="Scale Quiz")
+    ascending_answer_label.configure(text="")
+    descending_answer_label.configure(text="")
+
+def generate_quiz():
+    global quiz_a, quiz_b
+    quiz_a, quiz_b = generate_random_notes()
+    ascending_answer_label.configure(text="")
+    descending_answer_label.configure(text="")
+
+    if quiz_mode == QuizMode.DISTANCE:
+    
+        question_label.configure(
+            text=f"What is the distance from {quiz_a} to {quiz_b}?"
+        )
+
+    elif quiz_mode == QuizMode.INTERVAL:
+        
+        global current_interval 
+        current_interval = generate_random_interval()
+       
+        question_label.configure(
+            text=f"Apply a {current_interval} on {quiz_a}"
+        )
+  
+    elif quiz_mode == QuizMode.SCALE:
+        global current_scale_name
+        global current_scale_intervals
+        current_scale_name, current_scale_intervals = generate_random_scale()
+        question_label.configure(
+            text=f"What is the {current_scale_name} scale for the key of {quiz_a}?"
+        )
+
+
+def distance_quiz_answer(): 
+    if quiz_a is None or quiz_b is None:
+        ascending_answer_label.configure(text="")
+        descending_answer_label.configure(text="")
+        return
+
+    
+    interval = key.get_intervalName_from_twoNotes(quiz_a, quiz_b)
+    half_steps = key.get_halfSteps_from_intervalName(interval)
+    whole_half = key.get_wholeHalfSteps_from_halfSteps(half_steps)
+
+    descending_half_steps = 12 - half_steps
+    descending_interval = key.get_intervalName_from_halfSteps(descending_half_steps)
+    descending_whole_half = key.get_wholeHalfSteps_from_halfSteps(descending_half_steps)
+
+    ascending_answer_label.configure(text=f"Ascending: {interval}: {half_steps} half steps or {whole_half} ")
+    descending_answer_label.configure(text=f"Descending: {descending_interval}: {descending_half_steps} half steps, {descending_whole_half} ")
+
+
+
+def interval_quiz_answer():
+
+    half_steps = key.get_halfSteps_from_intervalName(current_interval)
+    ascending_answer = Key(key=f"{quiz_a}").get_note_from_halfSteps(half_steps)
+    descending_answer = Key(key=f"{quiz_a}").get_note_from_halfSteps(12 -half_steps)
+
+    ascending_answer_label.configure(text=f"Ascending: {ascending_answer}  ")
+    descending_answer_label.configure(text=f"Descending: {descending_answer} ")
+
+def scale_quiz_answer():
+
+    current_key = Key(quiz_a)
+    scale_formula = "   ".join(current_key.generate_scale(current_scale_name))
+    scale_intervals= current_key.scale_to_intervalNames(current_scale_name, root_relative=True)
+    scale_degrees= "   ".join(key.get_degrees_from_intervals(scale_intervals))
+
+    ascending_answer_label.configure(text=f"{scale_formula}  ")
+    descending_answer_label.configure(text=f" {scale_degrees} ")
+ 
+
+  
+
+    
+
+def show_quiz_answer():
+     if quiz_mode == QuizMode.DISTANCE:
+         distance_quiz_answer()
+     elif quiz_mode == QuizMode.INTERVAL:
+         interval_quiz_answer()
+     elif quiz_mode == QuizMode.SCALE:
+         scale_quiz_answer()
+         
+
+   
+
 #-----------------------Notebook and Styles-----------------------#
 
 notebook = ttk.Notebook(window, width= 1500, height= 600)
 tab1= ttk.Frame(notebook)
 tab2= ttk.Frame(notebook)
 tab3= ttk.Frame(notebook)
+tab4= ttk.Frame(notebook)
 
 notebook.add(tab1, text= "Notes names trainer")
 notebook.add(tab2, text= "Interval names trainer")
 notebook.add(tab3, text= "Scales Trainer")
+notebook.add(tab4, text= "Quiz")
 notebook.grid(row=0, column=0)
 style = ttk.Style()
 style.configure("TRadiobutton",
@@ -163,8 +317,8 @@ halfStepsButton.grid(row= 0, column =0, sticky="ew")
 halfStepsResult = ""
 intervalResult= ""
 ttk.Label(tab1_result_container,text="Half-Steps & Interval Name", font= "Arial 25  ").grid(row=0,column=0 , pady= 20, sticky="n")
-halfSteps_label = ttk.Label(tab1_result_container,text= f" {halfStepsResult} ",font= "Arial 30", relief= tk.GROOVE, borderwidth=2, width= 10, background= GOLDENROD,  anchor="center" )
-intervalName_label = ttk.Label(tab1_result_container, text= f" {intervalResult}", font="Arial 30", relief= tk.GROOVE,borderwidth=2, width= 20, background=GOLDENROD, anchor="center")
+halfSteps_label = ttk.Label(tab1_result_container,text= f" {halfStepsResult} ",font= "Arial 30", relief= tk.GROOVE, borderwidth=2, width= 10, background= GREEN,  anchor="center" )
+intervalName_label = ttk.Label(tab1_result_container, text= f" {intervalResult}", font="Arial 30", relief= tk.GROOVE,borderwidth=2, width= 20, background=GREEN, anchor="center")
 
 halfSteps_label.grid(row=1, column=0 ,  ipady= 10,  sticky= "ew" )
 intervalName_label.grid(row=1,column=1, ipady= 10 , sticky= "ew" )
@@ -221,7 +375,7 @@ noteResult = ""
 notesButton = ctk.CTkButton(tab2, text= "Generate",   command= lambda: change_halfSteps_from_intervals(), height= 100, width= 150,  font=("Roboto", 20, "bold"))
 
 ttk.Label(tab2,text="Note", font= "Arial 20 bold ",anchor="center").grid(row=1,column=5,  sticky="n")
-note_label = ttk.Label(tab2, text=f"{noteResult}", font= "Arial 60", anchor="center",relief=tk.GROOVE, background= GOLDENROD, width= 7 )
+note_label = ttk.Label(tab2, text=f"{noteResult}", font= "Arial 60", anchor="center",relief=tk.GROOVE, background= GREEN, width= 7 )
 notesButton.grid(row=5, column= 0, pady= 10)
 note_label.grid(row=2, column= 5)
 
@@ -276,11 +430,89 @@ full_scale = ""
 full_scale_degrees = ""
 full_scale_intervals = ""
 full_scale_label = ttk.Label(tab3_second_container, text= f"Notes:{full_scale}", font= "Arial 22 bold italic ",foreground= "light goldenrod" )
-full_scale_degrees_label = ttk.Label(tab3_second_container, text= f"Degrees: {full_scale_degrees}", font= "Arial 22 bold italic", foreground= GOLDENROD)
+full_scale_degrees_label = ttk.Label(tab3_second_container, text= f"Degrees: {full_scale_degrees}", font= "Arial 22 bold italic", foreground= GREEN)
 full_scale_interval_label = ttk.Label(tab3_second_container, text= f"Intervals: {full_scale_intervals}", font= "Arial 22 bold italic", foreground= GOLDENROD2)
 full_scale_label.grid(row=1, column=0, sticky= "w", pady=20)
 full_scale_degrees_label.grid(row=2, column=0, sticky= "w", pady=20)
 full_scale_interval_label.grid(row=3, column=0, sticky="w", pady=20)
+
+
+
+#-----------------------Tab 4-----------------------#
+
+#-----------------------Tab 4-----------------------#
+
+quiz_x_note = tk.StringVar(value="")
+quiz_y_note = tk.StringVar(value="")
+tab4_title_label = ttk.Label(tab4, text="Quiz", font="Arial 40 bold")
+tab4_title_label.grid(row=0, column=0, columnspan=2, pady=20, sticky="w")
+
+# Mode buttons container
+tab4_button_container = tk.Frame(tab4)
+tab4_button_container.grid(row=1, column=0, pady=10, sticky="w")
+
+distance_mode_button = ctk.CTkButton(
+    tab4_button_container,
+    text="Distance Quiz",
+    command=lambda: set_distance_mode()
+)
+distance_mode_button.grid(row=0, column=0, padx=5)
+
+interval_mode_button = ctk.CTkButton(
+    tab4_button_container,
+    text="Interval Quiz",
+    command=lambda: set_interval_mode()
+)
+interval_mode_button.grid(row=0, column=1, padx=5)
+
+scale_mode_button = ctk.CTkButton(
+    tab4_button_container,
+    text="Scale Quiz",
+    command=lambda: set_scale_mode()
+)
+scale_mode_button.grid(row=0, column=2, padx=5)
+
+# Answers + quiz area
+tab4_container = tk.Frame(tab4)
+tab4_container.grid(row=2, column=0, pady=20, sticky="w")
+
+question_label = ttk.Label(tab4_container, text="", font="Arial 24")
+question_label.grid(row=0, column=0, pady=5)
+
+question_button = ctk.CTkButton(
+    tab4_container,
+    text="Generate",
+    command=lambda: generate_quiz(),
+    height=100,
+    width=200,
+    font=("Roboto", 20, "bold"),
+)
+question_button.grid(row=0, column=1, pady=5)
+
+ascending_answer_label = ttk.Label(
+    tab4_container, text="", anchor="center", width=50,
+    font="Arial 24", foreground=GREEN
+)
+ascending_answer_label.grid(row=1, column=0, pady=5, padx=5)
+
+descending_answer_label = ttk.Label(
+    tab4_container, text="", anchor="center", width=50,
+    font="Arial 24", foreground=GOLDENROD2
+)
+descending_answer_label.grid(row=2, column=0, pady=5, padx=5)
+
+answer_button = ctk.CTkButton(
+    tab4_container,
+    text="Show Answer",
+    command=lambda: show_quiz_answer(),
+    height=100,
+    width=200,
+    font=("Roboto", 20, "bold"),
+)
+answer_button.grid(row=1, column=1, rowspan=2, pady=5)
+
+
+
 
 
 

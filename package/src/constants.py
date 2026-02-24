@@ -105,6 +105,8 @@ CHORDS = {
     "Minor": ["Minor 3rd", "Perfect 5th"],
     "Diminished": ["Minor 3rd", "Tritone"],
     "Augmented": ["Major 3rd", "Minor 6th"],
+    "Major 6th": ["Major 3rd", "Perfect 5th", "Major 6th"],
+    "Minor 6th": ["Minor 3rd", "Perfect 5th", "Major 6th"],
     "Major 7th": ["Major 3rd", "Perfect 5th", "Major 7th"],
     "Dominant 7th": ["Major 3rd", "Perfect 5th", "Minor 7th"],
     "Augmented 7th": ["Major 3rd", "Minor 6th", "Minor 7th"],

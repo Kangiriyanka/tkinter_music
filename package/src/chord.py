@@ -78,6 +78,8 @@ class Chord:
         :return: A list of notes forming the dominant 7th chord with a flattened 5th.
         """
         return self.generate_chord(CHORDS["Dominant 7th b5"])
+    
+    
 
     def get_minor_7thChord(self):
         """
@@ -110,6 +112,19 @@ class Chord:
         :return: A list of notes forming the diminished 7th chord.
         """
         return self.generate_chord((CHORDS["Diminished 7th"]))
+    
+
+    def get_major_6thChord(self):
+        """
+        Returns the notes of a major 6th chord (root, major 3rd, perfect 5th, major 6th).
+        """
+        return self.generate_chord(CHORDS["Major 6th"])
+
+    def get_minor_6thChord(self):
+        """
+        Returns the notes of a minor 6th chord (root, minor 3rd, perfect 5th, major 6th).
+        """
+        return self.generate_chord(CHORDS["Minor 6th"])
     
     def get_inversions(self, chord):
         

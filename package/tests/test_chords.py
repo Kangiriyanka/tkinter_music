@@ -1,6 +1,6 @@
 import unittest
-from key import Key 
-from chord import Chord
+from package.src.key import Key 
+from package.src.chord import Chord
 
 class TestChords(unittest.TestCase):
 
