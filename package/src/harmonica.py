@@ -13,6 +13,7 @@ SECOND_POSITION_SCALES = {
     "Major Pentatonic": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4, "draw"), (5, "blow"), (6,"blow")],
     "Minor Pentatonic": [(2, "draw"), (3, "bend",1), (4, "blow"),(4,"draw"), (5,"draw"), (6,"blow")],
     "Minor Pentatonic": [(2, "draw"), (3, "bend",1), (4, "blow"),(4,"draw"), (5,"draw"), (6,"blow")],
+    "Major Blues": [(2, "draw"), (3, "bend",2), (3, "bend", 1), (3, "draw"),(4,"draw"), (5,"blow")],
     "Minor Blues": [(2, "draw"), (3, "bend",1), (4, "blow"), (4, "bend",1),(4,"draw"), (5,"draw"), (6,"blow")],
     "Myxolidian": [(2, "draw"), (3, "bend", 2), (3, "draw"), (4,"blow"),(4,"draw"),(5,"blow"),(5,"draw"),(6,"blow")]
 }
